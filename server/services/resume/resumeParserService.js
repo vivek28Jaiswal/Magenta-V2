@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import zlib from 'zlib';
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
@@ -117,7 +118,10 @@ export const performOcr = async (imageInput, label = 'document') => {
   logger.info(`Starting Tesseract OCR engine on ${label}...`);
   let worker = null;
   try {
-    worker = await Tesseract.createWorker('eng', 1);
+    const tesseractCache = path.join(os.tmpdir(), 'tesseract-cache');
+    worker = await Tesseract.createWorker('eng', 1, {
+      cachePath: tesseractCache,
+    });
     const ret = await worker.recognize(imageInput);
     const text = (ret.data.text || '').trim();
     const confidence = Math.round(ret.data.confidence || 0);

@@ -1,14 +1,33 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 
-const uploadsDir = path.resolve('uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+// On Vercel / serverless, filesystem is read-only; use OS temp dir for uploads
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+let uploadsDir = isServerless ? path.join(os.tmpdir(), 'magenta-uploads') : path.resolve('uploads');
+
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+} catch (err) {
+  // If creating local uploads folder fails (e.g. read-only system), fallback to tmpdir
+  uploadsDir = path.join(os.tmpdir(), 'magenta-uploads');
+  try {
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+  } catch (e) {}
 }
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    if (!fs.existsSync(uploadsDir)) {
+      try {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      } catch (e) {}
+    }
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
