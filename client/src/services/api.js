@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+// Ensure baseURL always ends with /api, even if VITE_API_BASE_URL is provided without it or with trailing slashes
+const rawBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').trim().replace(/\/+$/, '');
+const baseURL = rawBaseUrl.endsWith('/api') ? rawBaseUrl : `${rawBaseUrl}/api`;
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
   },

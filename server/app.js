@@ -106,11 +106,18 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Mount Routes
+// Mount Routes (supporting both /api/* and /* so mismatched base URLs never 404)
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
+
 app.use('/api/resume', resumeRoutes);
+app.use('/resume', resumeRoutes);
+
 app.use('/api/application', applicationRoutes);
+app.use('/application', applicationRoutes);
+
 app.use('/api/jobs', jobRoutes);
+app.use('/jobs', jobRoutes);
 
 // Error handlers
 app.use(notFound);
